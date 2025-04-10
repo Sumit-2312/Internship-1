@@ -25,6 +25,7 @@ export default function Category(){
                     <div onClick={()=>setActive(item)} className={`text-center w-1/3 text-gray-300 flex items-center gap-1 justify-center rounded-2xl  h-full hover:cursor-pointer ${item===active? "bg-gradient-to-r from-purple-500 to-gray-400 text-black": " "  }`} key={item}>
 
                         <div>
+                            {/* @ts-ignore */}
                             {itemsImage[item]}
                         </div>
                         <div>
