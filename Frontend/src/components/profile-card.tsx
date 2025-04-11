@@ -54,7 +54,7 @@ export default function ProfileCard(){
                     <div className="text-xl font-gray-100 font-semibold">
                         John Doe
                     </div>
-                    <div className="text-md mt-1 text-gray-300 ">
+                    <div className="text-md sm:text-none text-center mt-1 text-gray-300 ">
                         Digital creator | Photography enthusiast | Travel Lover
                     </div>
                     <div className="text-gray-100 text-sm text-center md:text-start ">

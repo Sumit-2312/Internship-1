@@ -3,6 +3,8 @@ import Navbar from './components/navbar'
 import Content from './components/Content'
 import {Routes,Route} from 'react-router-dom';
 import InstagramPost from "./components/IndividualPost";
+import InstagramLogin from "./LoginPage";
+import Error from "./components/error-component";
 
 function App2(){
   return(
@@ -24,6 +26,8 @@ function App() {
     <Routes>
         <Route path="/" element={<App2 />} /> 
         <Route path="/post/:id" element={<InstagramPost/>} />
+        <Route path="/login" element={<InstagramLogin/>}></Route>
+        <Route path="/error" element={<Error/>}></Route>
     </Routes>
     </>
   )
