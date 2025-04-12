@@ -16,8 +16,8 @@ const InstagramLogin = () => {
     // The access token is valid for 60 days, after that we need to get a new access token
    
     const redirectUri = encodeURIComponent("https://instagram-h8yy.onrender.com/accessToken");
-
-    const authUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=2105360309980077&redirect_uri=${redirectUri}&response_type=code&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish,instagram_business_manage_insights`;
+    const authUrl = `https://www.instagram.com/oauth/authorize?client_id=2105360309980077&redirect_uri=${redirectUri}&scope=instagram_business_basic,instagram_business_manage_comments,instagram_business_manage_messages,instagram_business_content_publish,instagram_business_manage_insights&response_type=code&force_authentication=1`;
+    
     
 
     window.location.href = authUrl;
