@@ -16,7 +16,7 @@ const InstagramLogin = () => {
     // The access token is valid for 60 days, after that we need to get a new access token
    
    
-    const authUrl = `https://www.instagram.com/oauth/authorize?client_id=2105360309980077&redirect_uri=https%3A%2F%2Finstagram-h8yy.onrender.com%2FaccessToken&scope=instagram_business_basic,instagram_business_manage_comments,instagram_business_manage_messages,instagram_business_content_publish,instagram_business_manage_insights&response_type=code`;
+    const authUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=2105360309980077&redirect_uri=https://instagram-h8yy.onrender.com/accessToken&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights`;
 
     
 
