@@ -16,7 +16,8 @@ function App2(){
   useEffect(()=>{
     // navbar component will check if the user is logged in or not
     // if not then it will redirect to the login page
-    
+    console.log(accessToken);
+    console.log(userId);
   })
 
   return(
