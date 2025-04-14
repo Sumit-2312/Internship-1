@@ -16,7 +16,7 @@ const InstagramLogin = () => {
     // The access token is valid for 60 days, after that we need to get a new access token
    
   const authUrl = `https://www.facebook.com/v18.0/dialog/oauth
-?client_id=1917471312348743
+?client_id=1371054574082705
 &redirect_uri=https://instagram-h8yy.onrender.com/accessToken
 &scope=instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,pages_show_list,pages_read_engagement,pages_read_user_content
 &response_type=code
