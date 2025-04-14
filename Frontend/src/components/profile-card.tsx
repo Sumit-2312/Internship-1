@@ -1,9 +1,26 @@
+// profile-card.jsx
 import { CgProfile } from "react-icons/cg";
 import { useContext } from "react";
 import { PostContext } from "../PostContext/ContextProvider";
 
 export default function ProfileCard() {
-  const { ProfileInfo, Posts } = useContext<any>(PostContext);
+  const { ProfileInfo, Posts, loading, error } = useContext(PostContext);
+
+  if (loading) {
+    return (
+      <div className="bg-gray-500 text-white max-w-fit md:w-full min-h-80 rounded-2xl shadow-lg shadow-gray-800 flex items-center justify-center p-4">
+        <p className="text-xl">Loading profile...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-gray-500 text-white max-w-fit md:w-full min-h-80 rounded-2xl shadow-lg shadow-gray-800 flex items-center justify-center p-4">
+        <p className="text-xl text-red-300">Error loading profile: {error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-500 text-white max-w-fit md:w-full min-h-80 rounded-2xl shadow-lg shadow-gray-800 flex md:flex-row flex-col items-center md:items-start justify-center p-4">
@@ -28,20 +45,20 @@ export default function ProfileCard() {
       <div className="profile-Details w-2/3 h-full flex flex-col items-center md:items-start justify-start px-4 py-4 gap-5">
         <div className="Counts flex items-center justify-start py-2">
           <div className="flex flex-col items-center justify-center pr-4">
-            <h1 className="text-xl font-bold text-gray-100">{Posts?.length ?? 0}</h1>
+            <h1 className="text-xl font-bold text-gray-100">{Posts?.length || 0}</h1>
             <p className="text-gray-300 text-md">Posts</p>
           </div>
 
           <div className="flex flex-col items-center justify-center px-4">
             <h1 className="text-xl font-bold text-gray-100">
-              {ProfileInfo?.followers_count ?? 0}
+              {ProfileInfo?.followers_count || 0}
             </h1>
             <p className="text-gray-300 text-md">Followers</p>
           </div>
 
           <div className="flex flex-col items-center justify-center px-4">
             <h1 className="text-xl font-bold text-gray-100">
-              {ProfileInfo?.follows_count ?? 0}
+              {ProfileInfo?.follows_count || 0}
             </h1>
             <p className="text-gray-300 text-md">Following</p>
           </div>
