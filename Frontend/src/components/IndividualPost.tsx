@@ -12,7 +12,11 @@ export default function InstagramPost() {
 
 
   if (!post) {
-    return <div className="text-white text-lg">Post not found</div>;
+    return <div className="text-black text-lg w-screen h-screen bg-gradient-to-tr+ from-purple-700 via-gray-800 to-purple-500 flex items-center justify-center">
+      <div className='text-white text-4xl font-bold'>
+        Post not found...
+      </div>
+    </div>;
   }
 
   return (

@@ -1,77 +1,151 @@
-import  { createContext, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
+import  PostContext  from '../PostContext/ContextProvider';
+import axios from 'axios';
+import { BACKEND_URL } from '../config';
 
-
-
-export const PostContext = createContext(null);
-
-interface postsType{
-    id: number;
-    imageUrl: string;
-    likes: number;
-    comments: number;
-    caption: string;
+interface Comment {
+  id: string;
+  text: string;
+  username: string;
+  timestamp: string;
+  replies?: Comment[];
 }
 
+export default function InstagramPost() {
+  const { id } = useParams();
+  //@ts-ignore
+  const { Posts } = useContext(PostContext);
+  const post = Posts.find((p) => p.id === id);
 
-const ContextProvider = ({ children }:{children:any}) => {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
 
-    const posts:postsType[] = [
-        {
-            id: 1,
-            imageUrl: "https://plus.unsplash.com/premium_photo-1677231559666-53bed9be43ba?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            likes: 120,
-            comments: 34,
-            caption: "This is a sample caption",
+  const fetchComments = async () => {
+    if (!post?.id) return;
+
+    setLoadingComments(true);
+    try {
+      const accessToken = localStorage.getItem("access_token");
+      const res = await axios.get(`${BACKEND_URL}/user/comments`, {
+        params: {
+          mediaId: post.id,
+          accessToken,
         },
-        {
-            id: 2,
-            imageUrl: "https://images.unsplash.com/photo-1519764622345-23439dd774f7?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            likes: 12,
-            comments: 2,
-            caption: "This is a sample caption",
-        },
-        {
-            id: 3,
-            imageUrl: "https://images.unsplash.com/photo-1552642986-ccb41e7059e7?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            likes: 111,
-            comments: 28,
-            caption: "This is a sample caption",
-        },
-        {
-            id: 4,
-            imageUrl: "https://images.unsplash.com/photo-1593757147298-e064ed1419e5?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            likes: 189,
-            comments: 48,
-            caption: "This is a sample caption",
-        },
-        {
-            id: 5,
-            imageUrl: "https://plus.unsplash.com/premium_photo-1670948083449-41e3ea2263b7?q=80&w=1972&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            likes: 190,
-            comments: 90,
-            caption: "This is a sample caption",
-        },
-        {
-            id: 6,
-            imageUrl: "https://plus.unsplash.com/premium_photo-1664876514376-e684971ec8d3?q=80&w=1965&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            likes: 300,
-            comments: 39,
-            caption: "This is a sample caption",
-        }
-      ]
+      });
 
-    const [Posts, setPosts] = useState(posts);
+      setComments(res.data.comments || []);
+    } catch (err) {
+      console.error("Error fetching comments", err);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
 
-    console.log(Posts)
+  const handleReply = async (commentId: string) => {
+    try {
+      await axios.post(`${BACKEND_URL}api/user/reply`, {
+        commentId,
+        message: replyText,
+        accessToken: localStorage.getItem("access_token"),
+      });
 
+      setReplyText("");
+      setReplyingTo(null);
+      fetchComments(); // Refresh after reply
+    } catch (err) {
+      console.error("Failed to reply", err);
+    }
+  };
 
+  useEffect(() => {
+    fetchComments();
+  }, [post?.id]);
+
+  if (!post) {
     return (
-        //@ts-ignore
-        <PostContext.Provider value={{ Posts, setPosts }}>
-            {children}
-        </PostContext.Provider>
+      <div className="text-black text-lg w-screen h-screen bg-gradient-to-tr from-purple-700 via-red-600 to-purple-500 flex items-center justify-center">
+        <div className="text-white text-4xl font-bold">Post not found...</div>
+      </div>
     );
-};
+  }
 
+  return (
+    <div className="max-w-xl m-10 mx-auto bg-white shadow-md rounded-lg w-full">
+      {/* Image */}
+      <div className="w-full">
+        <img src={post.media_url} alt="Post" className="w-full object-cover" />
+      </div>
 
-export default ContextProvider;
+      {/* Caption */}
+      {post.caption && (
+        <div className="px-4 py-2">
+          <p className="text-gray-800 text-sm">{post.caption}</p>
+        </div>
+      )}
+
+      {/* Comments */}
+      <div className="p-4">
+        <h3 className="text-lg font-semibold mb-3">Comments</h3>
+        {loadingComments ? (
+          <p>Loading comments...</p>
+        ) : comments.length > 0 ? (
+          <div className="flex flex-col gap-3">
+            {comments.map((comment) => (
+              <div key={comment.id} className="bg-gray-100 p-3 rounded-lg shadow-inner">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm font-bold">{comment.username}</p>
+                  <span className="text-xs text-gray-500">
+                    {new Date(comment.timestamp).toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-sm mt-1 text-gray-800">{comment.text}</p>
+
+                {/* Reply input */}
+                {replyingTo === comment.id ? (
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Write a reply..."
+                      value={replyText}
+                      onChange={(e) => setReplyText(e.target.value)}
+                      className="flex-grow p-2 border border-gray-300 rounded"
+                    />
+                    <button
+                      onClick={() => handleReply(comment.id)}
+                      className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700"
+                    >
+                      Send
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setReplyingTo(comment.id)}
+                    className="text-sm text-blue-600 mt-1 hover:underline"
+                  >
+                    Reply
+                  </button>
+                )}
+
+                {/* Nested replies */}
+                {comment.replies && comment.replies.length > 0 && (
+                  <div className="mt-2 ml-4 border-l border-gray-300 pl-2">
+                    {comment.replies.map((reply) => (
+                      <div key={reply.id} className="text-sm text-gray-700">
+                        <strong>{reply.username}:</strong> {reply.text}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">No comments yet.</p>
+        )}
+      </div>
+    </div>
+  );
+}

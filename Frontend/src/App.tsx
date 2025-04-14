@@ -11,19 +11,17 @@ function App2(){
 
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [accessToken, setAccessToken] = useState("");
-  const [userId, setUserId] = useState("");
 
   useEffect(()=>{
     // navbar component will check if the user is logged in or not
     // if not then it will redirect to the login page
     console.log(accessToken);
-    console.log(userId);
   })
 
   return(
     <div className="w-full max-w-[100vw]
     min-h-screen flex flex-col items-center justify-start p-4 bg-gradient-to-t from-purple-700 to-black gap-10 overflow-x-hidden">
-             <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} setAccessToken={setAccessToken} setUserId={setUserId} />
+             <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} setAccessToken={setAccessToken} />
              <div className="max-w-[900px] flex flex-col items-center justify-start gap-10">
                <ProfileCard/>
                <Content/>
