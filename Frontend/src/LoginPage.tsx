@@ -15,7 +15,12 @@ const InstagramLogin = () => {
     // access token is used to make API calls to Instagram Graph API
     // The access token is valid for 60 days, after that we need to get a new access token
    
-  const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=1917471312348743&redirect_uri=https://instagram-h8yy.onrender.com/accessToken&scope=instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,pages_show_list,pages_read_engagement,pages_read_user_content&response_type=code`;
+  const authUrl = `https://www.facebook.com/v18.0/dialog/oauth
+?client_id=9583293718417663
+&redirect_uri=https://instagram-h8yy.onrender.com/accessToken
+&scope=instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish,instagram_business_manage_insights
+&response_type=code
+`;
 
     
 
