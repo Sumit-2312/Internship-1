@@ -1,151 +1,107 @@
-import { useParams } from 'react-router-dom';
-import { useContext, useEffect, useState } from 'react';
-import  PostContext  from '../PostContext/ContextProvider';
+import { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { BACKEND_URL } from '../config';
+import { useNavigate } from 'react-router-dom';
 
-interface Comment {
+export const  PostContext = createContext(null);
+
+interface Post {
   id: string;
-  text: string;
-  username: string;
+  media_url: string;
+  caption?: string;
+  like_count?: number;
+  comments_count?: number;
+  media_type?: string;
   timestamp: string;
-  replies?: Comment[];
 }
 
-export default function InstagramPost() {
-  const { id } = useParams();
-  //@ts-ignore
-  const { Posts } = useContext(PostContext);
-  const post = Posts.find((p) => p.id === id);
+interface Profile {
+  username: string;
+  followers_count: number;
+  follows_count: number;
+  media_count: number;
+  biography: string;
+  profile_picture_url: string;
+}
 
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loadingComments, setLoadingComments] = useState(false);
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState("");
-
-  const fetchComments = async () => {
-    if (!post?.id) return;
-
-    setLoadingComments(true);
-    try {
-      const accessToken = localStorage.getItem("access_token");
-      const res = await axios.get(`${BACKEND_URL}/user/comments`, {
-        params: {
-          mediaId: post.id,
-          accessToken,
-        },
-      });
-
-      setComments(res.data.comments || []);
-    } catch (err) {
-      console.error("Error fetching comments", err);
-    } finally {
-      setLoadingComments(false);
-    }
-  };
-
-  const handleReply = async (commentId: string) => {
-    try {
-      await axios.post(`${BACKEND_URL}api/user/reply`, {
-        commentId,
-        message: replyText,
-        accessToken: localStorage.getItem("access_token"),
-      });
-
-      setReplyText("");
-      setReplyingTo(null);
-      fetchComments(); // Refresh after reply
-    } catch (err) {
-      console.error("Failed to reply", err);
-    }
-  };
+const ContextProvider = ({ children }: { children: any }) => {
+  const [Posts, setPosts] = useState<Post[]>([]);
+  const [ProfileInfo, setProfileInfo] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchComments();
-  }, [post?.id]);
+    const fetchInstagramData = async () => {
+      const accessToken = localStorage.getItem("access_token");
+      const userId = localStorage.getItem("user_id");
 
-  if (!post) {
-    return (
-      <div className="text-black text-lg w-screen h-screen bg-gradient-to-tr from-purple-700 via-red-600 to-purple-500 flex items-center justify-center">
-        <div className="text-white text-4xl font-bold">Post not found...</div>
-      </div>
-    );
-  }
+      if (!accessToken) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        let currentUserId = userId;
+
+        if (!currentUserId) {
+          const meResponse = await axios.get(`https://graph.facebook.com/v18.0/me`, {
+            params: {
+              fields: 'id',
+              access_token: accessToken,
+            },
+          });
+
+          if (meResponse.data?.id) {
+            localStorage.setItem("user_id", meResponse.data.id);
+            currentUserId = meResponse.data.id;
+          }
+        }
+
+        const profileRes = await axios.get(`/api/user/profile-info`, {
+          params: {
+            igUserId: currentUserId,
+            pageAccessToken: accessToken,
+          },
+        });
+
+        setProfileInfo(profileRes.data.profileInfo);
+
+        const mediaRes = await axios.get(`/api/user/media-info`, {
+          params: {
+            igUserId: currentUserId,
+            pageAccessToken: accessToken,
+          },
+        });
+
+        setPosts(mediaRes.data.mediaInfo);
+      } catch (err: any) {
+        console.error("Error fetching Instagram data:", err);
+
+        const errorMessage = err.response?.data?.error?.message || "Failed to fetch Instagram data";
+
+        // Redirect to /error with the error message
+        navigate("/error", {
+          state: {
+            error: errorMessage
+          }
+        });
+
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const isLoggedIn = localStorage.getItem("LoggedIn") === "true";
+    if (isLoggedIn) fetchInstagramData();
+  }, [navigate]);
 
   return (
-    <div className="max-w-xl m-10 mx-auto bg-white shadow-md rounded-lg w-full">
-      {/* Image */}
-      <div className="w-full">
-        <img src={post.media_url} alt="Post" className="w-full object-cover" />
-      </div>
-
-      {/* Caption */}
-      {post.caption && (
-        <div className="px-4 py-2">
-          <p className="text-gray-800 text-sm">{post.caption}</p>
-        </div>
-      )}
-
-      {/* Comments */}
-      <div className="p-4">
-        <h3 className="text-lg font-semibold mb-3">Comments</h3>
-        {loadingComments ? (
-          <p>Loading comments...</p>
-        ) : comments.length > 0 ? (
-          <div className="flex flex-col gap-3">
-            {comments.map((comment) => (
-              <div key={comment.id} className="bg-gray-100 p-3 rounded-lg shadow-inner">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm font-bold">{comment.username}</p>
-                  <span className="text-xs text-gray-500">
-                    {new Date(comment.timestamp).toLocaleString()}
-                  </span>
-                </div>
-                <p className="text-sm mt-1 text-gray-800">{comment.text}</p>
-
-                {/* Reply input */}
-                {replyingTo === comment.id ? (
-                  <div className="mt-2 flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Write a reply..."
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      className="flex-grow p-2 border border-gray-300 rounded"
-                    />
-                    <button
-                      onClick={() => handleReply(comment.id)}
-                      className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700"
-                    >
-                      Send
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setReplyingTo(comment.id)}
-                    className="text-sm text-blue-600 mt-1 hover:underline"
-                  >
-                    Reply
-                  </button>
-                )}
-
-                {/* Nested replies */}
-                {comment.replies && comment.replies.length > 0 && (
-                  <div className="mt-2 ml-4 border-l border-gray-300 pl-2">
-                    {comment.replies.map((reply) => (
-                      <div key={reply.id} className="text-sm text-gray-700">
-                        <strong>{reply.username}:</strong> {reply.text}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-500">No comments yet.</p>
-        )}
-      </div>
-    </div>
+    //@ts-ignore
+    <PostContext.Provider value={{ Posts, setPosts, ProfileInfo, setProfileInfo, loading, error }}>
+      {children}
+    </PostContext.Provider>
   );
-}
+};
+
+export default ContextProvider;
